@@ -15,28 +15,64 @@ warnings.filterwarnings("ignore", category=FITSFixedWarning)
 
 class DataObject:
 
-    def get_atomic_map_hdu(self):
+    def get_atomic_map_data(self):
         """
-        Returns: atomic map Header Data Unit (hdu) and World Coordinate System (wcs)
-
+        Since the atomic map is incomplete, this causes weird data with values < 0
+        Returns: Filtered atomic map (Data above threshold = 0)
         """
         filename = resource_filename(__name__, "FITS/atomic.fits")
         if not os.path.exists(filename):
             raise FileNotFoundError(f"File {filename} not found.")
+        comapdata = fits.getdata(filename)
+        thresh = 0
+        mask = np.isnan(comapdata) | (
+            comapdata <= thresh
+        )  # A Boolean (True/False) array
+        # Set all the above values to nan
+        comapdata[mask] = np.nan
+        return comapdata
+
+    # ===================================================================================
+    def get_atomic_map_hdu(self):
+        """
+        Returns: co map Header Data Unit (hdu) and World Coordinate System (wcs)
+        """
+        # Get filtered atomic map data
+        filtered_data = self.get_atomic_map_data()
+        filename = resource_filename(__name__, "FITS/atomic.fits")
         hdu = fits.open(filename)[0]
+        hdu.data = filtered_data
 
         return hdu
+
+    # ===================================================================================
+    def get_co_map_data(self):
+        """
+        Since the CO map is incomplete, this causes weird data with values < 0
+        Returns: Filtered CO map (Data above threshold = 0)
+        """
+        filename = resource_filename(__name__, "FITS/ico.regrid.smooth.fits")
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"File {filename} not found.")
+        comapdata = fits.getdata(filename)
+        thresh = 0
+        mask = np.isnan(comapdata) | (
+            comapdata <= thresh
+        )  # A Boolean (True/False) array
+        # Set all the above values to nan
+        comapdata[mask] = np.nan
+        return comapdata
 
     # ===================================================================================
     def get_co_map_hdu(self):
         """
         Returns: co map Header Data Unit (hdu) and World Coordinate System (wcs)
-
         """
+        # Get filtered CO map data
+        filtered_data = self.get_co_map_data()
         filename = resource_filename(__name__, "FITS/ico.regrid.smooth.fits")
-        if not os.path.exists(filename):
-            raise FileNotFoundError(f"File {filename} not found.")
         hdu = fits.open(filename)[0]
+        hdu.data = filtered_data
 
         return hdu
 
@@ -65,6 +101,12 @@ class DataObject:
         return table
 
     # ===================================================================================
+    def get_snr_coord_df(self):
+        table = pd.read_csv("data/tsv/snr_df.tsv", sep="\t")
+
+        return table
+
+    # ===================================================================================
     def get_star_pixel_array(self, star_type: str):
         if star_type == "RSGs":
             coord_df = self.get_rsg_coord_df()
@@ -76,9 +118,14 @@ class DataObject:
             RA = coord_df["RA"]
             Dec = coord_df["Dec"]
             sky_coord_unit = ("deg", "deg")
+        elif star_type == "SNRs":
+            coord_df = self.get_snr_coord_df()
+            RA = coord_df["RAJ2000"]
+            Dec = coord_df["DEJ2000"]
+            sky_coord_unit = ("hourangle", "deg")
         else:
             raise ValueError(
-                "Expected 'RSGs' or 'WRs' for star_type, got '{}'".format(star_type)
+                f"Expected 'RSGs', 'WRs', or 'SNRs' for star_type, got '{star_type}'"
             )
 
         sky_coord = SkyCoord(RA, Dec, unit=sky_coord_unit)
@@ -111,9 +158,11 @@ class DataObject:
             i_component, j_component = self.get_star_pixel_array(star_type="RSGs")
         elif star_type == "WRs":
             i_component, j_component = self.get_star_pixel_array(star_type="WRs")
+        elif star_type == "SNRs":
+            i_component, j_component = self.get_star_pixel_array(star_type="SNRs")
         else:
             raise ValueError(
-                "Expected 'RSGs' or 'WRs' for star_type, got '{}'".format(star_type)
+                f"Expected 'RSGs', 'WRs', or 'SNRs for star_type, got '{star_type}'"
             )
 
         i_component = np.array(i_component)
