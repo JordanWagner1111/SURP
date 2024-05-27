@@ -114,6 +114,21 @@ class Region(DataObject):
         return pixel_region
 
     # ===================================================================================
+    def atomic_gas_in_region(self):
+        pixel_region = self.draw_sky_region(self.get_atomic_map_wcs())
+
+        # Create a mask for the region
+        mask = pixel_region.to_mask(mode="center")
+
+        # Apply the mask to the data
+        masked_data = mask.to_image(self.get_atomic_map_data().shape)
+
+        # Mask the data outside the region
+        data_masked = np.where(masked_data, self.get_atomic_map_data(), np.nan)
+
+        return data_masked
+
+    # ===================================================================================
     def star_coords_inside_aca_region(self, wcs, star_type):
         if star_type == "RSGs":
             star_coords = SkyCoord(
