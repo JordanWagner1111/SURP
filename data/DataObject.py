@@ -87,10 +87,13 @@ class DataObject:
         return wcs
 
     # ===================================================================================
-    def get_rsg_coord_df(self):
+    def get_rsg_coord_df(self, loglum: float = 0):
         table = pd.read_csv("data/tsv/rsg_df.tsv", sep="\t")
-
-        return table
+        if loglum > 0:
+            table = self.filter_rsg_by_loglum(table, loglum=loglum)
+            return table
+        else:
+            return table
 
     # ===================================================================================
     def get_wr_coord_df(self):
@@ -193,3 +196,10 @@ class DataObject:
         return i_component, j_component
 
     # ===================================================================================
+    def filter_rsg_by_loglum(self, df, loglum: float):
+        """
+        Function returns filtered RSG dataframe
+        """
+        filtered_df = df[df["LogLum"] >= loglum]
+
+        return filtered_df

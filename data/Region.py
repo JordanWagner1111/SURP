@@ -94,11 +94,10 @@ class Region(DataObject):
     # ===================================================================================
     def get_sky_region(self):
         sky_region = Regions.read("data/reg/ACA_region.reg", format="ds9")
-        print(sky_region[0])
         return sky_region
 
     # ===================================================================================
-    def draw_gas_map_inside_sky_region(self, wcs):
+    def draw_sky_region(self, wcs):
         vertices = SkyCoord(
             [
                 (23.6754846, 30.8179815),
@@ -118,8 +117,8 @@ class Region(DataObject):
     def star_coords_inside_aca_region(self, wcs, star_type):
         if star_type == "RSGs":
             star_coords = SkyCoord(
-                self.get_rsg_coord_df()["RAJ2000"],
-                self.get_rsg_coord_df()["DEJ2000"],
+                self.get_rsg_coord_df(loglum=4.7)["RAJ2000"],
+                self.get_rsg_coord_df(loglum=4.7)["DEJ2000"],
                 unit=("hourangle", "deg"),
             )
         elif star_type == "WRs":
