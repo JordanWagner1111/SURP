@@ -19,12 +19,27 @@ warnings.filterwarnings("ignore", category=FITSFixedWarning)
 class Region(DataObject):
 
     # ===================================================================================
+    def get_atomic_map_data(self):
+        atomicmap = fits.open("data/FITS/atomic.fits")
+        atomicmapdata = atomicmap[0].data
+
+        return atomicmapdata
+
+    # ===================================================================================
+    def get_atomic_map_header(self):
+        atomicmap = fits.open("data/FITS/atomic.fits")
+        atomicmapheader = atomicmap[0].header
+
+        return atomicmapheader
+
+    # ===================================================================================
     def get_co_map_data(self):
         comap = fits.open("data/FITS/ico.regrid.smooth.fits")
-        comapdata = comap[0].data[0, 0]
+        comapdata = comap[0].data
 
         return comapdata
 
+    # ===================================================================================
     def get_co_map_header(self):
         comap = fits.open("data/FITS/ico.regrid.smooth.fits")
         comapheader = comap[0].header
@@ -32,7 +47,7 @@ class Region(DataObject):
         return comapheader
 
     # ===================================================================================
-    def star_coords_inside_gas_region(self, wcs, star_type):
+    def star_coords_inside_gas_region(self, wcs, star_type, map_type):
         """
         Returns: 2-D np.array of pixel coordinates
         """
@@ -59,19 +74,27 @@ class Region(DataObject):
                 f"Expected 'RSGs', 'WRs', or 'SNRs' for star_type, got '{star_type}'"
             )
         star_pix = np.asarray(skycoord_to_pixel(star_coords, wcs), dtype=int)
-        comapdata = self.get_co_map_data()
-        lencox, lencoy = comapdata.shape
+        if map_type == "Atomic":
+            mapdata = self.get_atomic_map_data()
+            lencox, lencoy = mapdata.shape
+        elif map_type == "CO":
+            mapdata = self.get_co_map_data()
+            lencox, lencoy = mapdata.shape
+        else:
+            raise ValueError(
+                "Expected 'Atomic' or 'CO' for map_type, got '{}'".format(map_type)
+            )
         # Only keep RSG pixels that fall inside the CO map area
-        rsgpix_insideco = np.array(
+        rsgpix_inside_gas = np.array(
             [[i, j] for i, j in star_pix.T if ((0 <= j < lencox) and (0 <= i < lencoy))]
         ).T
 
-        return rsgpix_insideco
+        return rsgpix_inside_gas
 
     # ===================================================================================
     def get_sky_region(self):
         sky_region = Regions.read("data/reg/ACA_region.reg", format="ds9")
-
+        print(sky_region[0])
         return sky_region
 
     # ===================================================================================
@@ -87,7 +110,6 @@ class Region(DataObject):
             frame="fk5",
         )
         region = PolygonSkyRegion(vertices=vertices)
-        # region = RectangleSkyRegion(center=center_sky, width=778.045*u.arcsec, height=885.116*u.arcsec, angle=13.715856*u.deg)
         pixel_region = region.to_pixel(wcs)
 
         return pixel_region
@@ -116,7 +138,7 @@ class Region(DataObject):
             raise ValueError(
                 f"Expected 'RSGs', 'WRs', or 'SNRs' for star_type, got '{star_type}'"
             )
-
+        star_coords = np.transpose(star_coords)
         arr_is_inside = self.get_sky_region()[0].contains(star_coords, wcs)
         rsgs_inside_box = star_coords[arr_is_inside]
 

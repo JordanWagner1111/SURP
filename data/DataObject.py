@@ -82,7 +82,7 @@ class DataObject:
 
     # ===================================================================================
     def get_co_map_wcs(self):
-        wcs = WCS(self.get_co_map_hdu().header)
+        wcs = WCS(self.get_co_map_hdu().header, naxis=2)
 
         return wcs
 
@@ -178,8 +178,8 @@ class DataObject:
                 j_component < hdu.data.shape[1]
             )
         elif map_type == "CO":
-            valid_mask = (i_component < hdu.data[0, 0].shape[0]) & (
-                j_component < hdu.data[0, 0].shape[1]
+            valid_mask = (i_component < hdu.data.shape[0]) & (
+                j_component < hdu.data.shape[1]
             )
         else:
             raise ValueError(
