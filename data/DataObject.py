@@ -87,10 +87,16 @@ class DataObject:
         return wcs
 
     # ===================================================================================
-    def get_rsg_coord_df(self, loglum: float = 0):
+    def get_rsg_coord_df(self, min_loglum: float = 0, max_loglum: float = 6.02):
         table = pd.read_csv("data/tsv/rsg_df.tsv", sep="\t")
-        if loglum > 0:
-            table = self.filter_rsg_by_loglum(table, loglum=loglum)
+        if (
+            min_loglum > 0
+            or max_loglum < 6.02
+            or (min_loglum > 0 and max_loglum < 6.02)
+        ):
+            table = self.filter_rsg_by_loglum(
+                table, min_loglum=min_loglum, max_loglum=max_loglum
+            )
             return table
         else:
             return table
@@ -108,9 +114,13 @@ class DataObject:
         return table
 
     # ===================================================================================
-    def get_star_pixel_array(self, star_type: str, map_type: str):
+    def get_star_pixel_array(
+        self, star_type: str, min_loglum: float = 0, max_loglum: float = 6.02
+    ):
         if star_type == "RSGs":
-            coord_df = self.get_rsg_coord_df()
+            coord_df = self.get_rsg_coord_df(
+                min_loglum=min_loglum, max_loglum=max_loglum
+            )
             RA = coord_df["RAJ2000"]
             Dec = coord_df["DEJ2000"]
             sky_coord_unit = ("hourangle", "deg")
@@ -137,7 +147,14 @@ class DataObject:
         return i_component, j_component
 
     # ===================================================================================
-    def stars_on_gas_map_array(self, hdu, star_type: str, map_type: str):
+    def stars_on_gas_map_array(
+        self,
+        hdu,
+        star_type: str,
+        map_type: str,
+        min_loglum: float = 0,
+        max_loglum: float = 6.02,
+    ):
         """
         Filters and returns the pixel coordinates of stars on the gas map. It computes
         the pixel coordinates of the specified star type using the World Coordinate System (WCS)
@@ -157,16 +174,12 @@ class DataObject:
         """
         if star_type == "RSGs":
             i_component, j_component = self.get_star_pixel_array(
-                star_type="RSGs", map_type=map_type
+                star_type="RSGs", min_loglum=min_loglum, max_loglum=max_loglum
             )
         elif star_type == "WRs":
-            i_component, j_component = self.get_star_pixel_array(
-                star_type="WRs", map_type=map_type
-            )
+            i_component, j_component = self.get_star_pixel_array(star_type="WRs")
         elif star_type == "SNRs":
-            i_component, j_component = self.get_star_pixel_array(
-                star_type="SNRs", map_type=map_type
-            )
+            i_component, j_component = self.get_star_pixel_array(star_type="SNRs")
         else:
             raise ValueError(
                 f"Expected 'RSGs', 'WRs', or 'SNRs for star_type, got '{star_type}'"
@@ -196,10 +209,12 @@ class DataObject:
         return i_component, j_component
 
     # ===================================================================================
-    def filter_rsg_by_loglum(self, df, loglum: float):
+    def filter_rsg_by_loglum(
+        self, df, min_loglum: float = 0, max_loglum: float = 6.02
+    ):  # Max loglum of rsg df
         """
         Function returns filtered RSG dataframe
         """
-        filtered_df = df[df["LogLum"] >= loglum]
+        filtered_df = df[(df["LogLum"] >= min_loglum) & (df["LogLum"] <= max_loglum)]
 
         return filtered_df
