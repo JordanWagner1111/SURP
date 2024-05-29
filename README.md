@@ -26,7 +26,7 @@ This repository aims to provide clear and concise code for creating plots in Jup
     ```
 3. **Create and activate Conda Environment**:
     ```bash
-    conda create --name your_env_name python=3.8
+    conda create --name your_env_name python=3.9.19
     conda activate your_env_name
     ```
 4. **Install required dependencies**:
