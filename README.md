@@ -22,15 +22,19 @@ This repository aims to provide clear and concise code for creating plots in Jup
 
 2. **Navigate to the repository**:
     ```bash
-    cd name-of-your-repo-folder
+    cd SURP
     ```
-
-3. **Install required dependencies**:
+3. **Create and activate Conda Environment**:
+    ```bash
+    conda create --name your_env_name python=3.8
+    conda activate your_env_name
+    ```
+4. **Install required dependencies**:
     ```bash
     pip install -r requirements.txt
     ```
 
-4. **Open Jupyter Notebooks**:
+5. **Open Jupyter Notebooks**:
     ```bash
     jupyter notebook
     ```
