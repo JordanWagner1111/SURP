@@ -132,8 +132,8 @@ class Region(DataObject):
     def star_coords_inside_aca_region(self, wcs, star_type):
         if star_type == "RSGs":
             star_coords = SkyCoord(
-                self.get_rsg_coord_df(loglum=4.7)["RAJ2000"],
-                self.get_rsg_coord_df(loglum=4.7)["DEJ2000"],
+                self.get_rsg_coord_df(min_loglum=4.7)["RAJ2000"],
+                self.get_rsg_coord_df(min_loglum=4.7)["DEJ2000"],
                 unit=("hourangle", "deg"),
             )
         elif star_type == "WRs":
