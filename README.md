@@ -41,3 +41,4 @@ This repository aims to provide clear and concise code for creating plots in Jup
 One possible future upgrade for this repo is to allow it to become a template that can import different data sets. This will streamline the process of conducting similar research methods across various data sources, allowing efficiency and consistency for future research with the same methodology.
 
 ![gas_maps_with_stars](https://github.com/JordanWagner1111/SURP/assets/105239335/8de5378a-a641-467c-b564-d347731c9b09)
+(Sarbadhicary et al 2023)
