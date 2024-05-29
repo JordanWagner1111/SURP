@@ -98,6 +98,20 @@ class Region(DataObject):
 
     # ===================================================================================
     def draw_sky_region(self, wcs):
+        """
+        This funciton draws a sky region using the PolygonSkyRegion from the regions package. This defined region lets us filter
+        our star data to only include stars within this region.
+
+        Parameters:
+        -----------
+        wcs : WCS
+            The World Coordinate System object used for the transformation.
+
+        Returns:
+        --------
+        PixelRegion
+            The polygonal sky region converted to pixel coordinates based on the provided WCS.
+        """
         vertices = SkyCoord(
             [
                 (23.6754846, 30.8179815),
@@ -115,6 +129,18 @@ class Region(DataObject):
 
     # ===================================================================================
     def atomic_gas_in_region(self):
+        """
+        Retrieve atomic gas data within a specified sky region.
+
+        This function creates a pixel mask for the ACA sky region using the World Coordinate System (WCS)
+        of the atomic map. It then applies this mask to the atomic map data to extract only the atomic gas
+        data within the specified region. Data outside the region is masked and set to NaN.
+
+        Returns:
+        --------
+        numpy.ndarray
+            An array representing the atomic gas data within the specified region.
+        """
         pixel_region = self.draw_sky_region(self.get_atomic_map_wcs())
 
         # Create a mask for the region
@@ -130,6 +156,24 @@ class Region(DataObject):
 
     # ===================================================================================
     def star_coords_inside_aca_region(self, wcs, star_type):
+        """
+        This function retrieves the celestial coordinates of stars of a specified type
+        (Red Supergiants (RSGs), Wolf-Rayet stars (WRs), or Supernova Remnants (SNRs)), and checks
+        which of these stars are located within the defined ACA region using the provided World Coordinate
+        System (WCS).
+
+        Parameters:
+        -----------
+        wcs : WCS
+            The World Coordinate System of the gas map used for the transformation.
+        star_type : str
+            The type of stars to check. Should be one of 'RSGs', 'WRs', or 'SNRs'.
+
+        Returns:
+        --------
+        numpy.ndarray
+            An array of SkyCoord objects representing the stars that are inside the ACA region.
+        """
         if star_type == "RSGs":
             star_coords = SkyCoord(
                 self.get_rsg_coord_df(min_loglum=4.7)["RAJ2000"],

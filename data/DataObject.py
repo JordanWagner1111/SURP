@@ -76,18 +76,35 @@ class DataObject:
 
     # ===================================================================================
     def get_atomic_map_wcs(self):
+        """
+        Returns: World Coordinate System (WCS) of the atomic gas map
+        """
         wcs = WCS(self.get_atomic_map_hdu().header)
 
         return wcs
 
     # ===================================================================================
     def get_co_map_wcs(self):
+        """
+        Returns: World Coordinate System (WCS) of the atomic gas map
+        """
         wcs = WCS(self.get_co_map_hdu().header, naxis=2)
 
         return wcs
 
     # ===================================================================================
     def get_rsg_coord_df(self, min_loglum: float = 0, max_loglum: float = 6.02):
+        """
+        This function reads a TSV file containing data on RSGs and optionally filters the entries
+        based on their logarithmic luminosity values.
+
+        Parameters:
+        -----------
+        min_loglum : float, optional
+            The minimum logarithmic luminosity for filtering RSGs, by default 0.
+        max_loglum : float, optional
+            The maximum logarithmic luminosity for filtering RSGs, by default 6.02.
+        """
         table = pd.read_csv("data/tsv/rsg_df.tsv", sep="\t")
         if (
             min_loglum > 0
@@ -117,6 +134,33 @@ class DataObject:
     def get_star_pixel_array(
         self, star_type: str, min_loglum: float = 0, max_loglum: float = 6.02
     ):
+        """
+        Get pixel coordinates for specific types of stars from their coordinates.
+
+        This function retrieves the right ascension and declination
+        of stars of a specified type (Red Supergiants (RSGs), Wolf-Rayet stars (WRs), or
+        Supernova Remnants (SNRs)) and converts these coordinates to pixel values in the atomic
+        map using the map's World Coordinate System (WCS) transformation.
+
+        Parameters:
+        -----------
+        star_type : str
+            The type of stars to retrieve coordinates for. Should be one of 'RSGs', 'WRs', or 'SNRs'.
+        min_loglum : float, optional
+            The minimum logarithmic luminosity for filtering RSGs, by default 0.
+        max_loglum : float, optional
+            The maximum logarithmic luminosity for filtering RSGs, by default 6.02 (the max luminosity in the rsg data).
+
+        Returns:
+        --------
+        tuple of numpy.ndarray
+            Two arrays representing the x and y pixel coordinates of the stars.
+
+        Raises:
+        -------
+        ValueError
+            If `star_type` is not one of 'RSGs', 'WRs', or 'SNRs'.
+        """
         if star_type == "RSGs":
             coord_df = self.get_rsg_coord_df(
                 min_loglum=min_loglum, max_loglum=max_loglum
