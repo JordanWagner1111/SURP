@@ -215,6 +215,6 @@ class DataObject:
         """
         Function returns filtered RSG dataframe
         """
-        filtered_df = df[(df["LogLum"] >= min_loglum) & (df["LogLum"] <= max_loglum)]
+        filtered_df = df[(df["LogLum"] > min_loglum) & (df["LogLum"] < max_loglum)]
 
         return filtered_df
